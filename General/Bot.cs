@@ -37,7 +37,7 @@ namespace Cardagin
                 Token = configJson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
-                Intents = DiscordIntents.MessageContents | DiscordIntents.GuildMessages | DiscordIntents.DirectMessages
+                Intents = DiscordIntents.MessageContents | DiscordIntents.GuildMessages | DiscordIntents.DirectMessages | DiscordIntents.Guilds
             };
 
             Client = new DiscordClient(config);
@@ -52,6 +52,7 @@ namespace Cardagin
             Commands = Client.UseCommandsNext(commandsConfig);
 
             Commands.RegisterCommands<Games.Commands.GameCommands>();
+            Commands.RegisterCommands<Games.Commands.BlackjackCommands>();
 
             await Client.ConnectAsync();
             await Task.Delay(-1);

@@ -16,6 +16,4 @@ namespace Cardagin.Decks
             return "Card Rank Suit Combo not valid";
         }
     }
-
-    
 }

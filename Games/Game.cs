@@ -12,13 +12,14 @@ namespace Cardagin.Games
         public bool InProgress { get; set; } = false;
         public Dictionary<ulong, Sessions.UserInfo> Players { get; set; } = new Dictionary<ulong, Sessions.UserInfo>();
         public Decks.Deck GameDeck { get; set; }
+        public Decks.Deck DealerDeck { get; set; }
         public DiscordChannel Channel { get; set; }
 
         public virtual void Start(DiscordChannel channel)
         {
             Console.WriteLine($"Game '{Name}' has started!");
             Channel = channel;
-            Bot.ActiveGames[channel] = this;
+            Bot.ActiveGames.Add(channel, this);
         }
 
         public virtual void Begin()
@@ -30,6 +31,14 @@ namespace Cardagin.Games
         public virtual void End()
         {
             InProgress = false;
+            Bot.ActiveGames.Remove(Channel);
+            Console.WriteLine($"Game '{Name}' has ended!");
+        }
+
+        public virtual void Deal()
+        {
+            InProgress = true;
+            Console.WriteLine($"Dealing cards in game '{Name}'...");
         }
     }
 

@@ -1,6 +1,7 @@
 ﻿using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace Cardagin.Games
@@ -27,9 +28,44 @@ namespace Cardagin.Games
             base.Begin();
         }
 
+        public override void Deal()
+        {
+            base.Deal();
+            foreach (KeyValuePair<ulong, Sessions.UserInfo> player in Players)
+            {
+                Sessions.UserInfo userInfo = player.Value;
+                userInfo.Decks[Channel].AddCard(GameDeck.DrawCard());
+                userInfo.Decks[Channel].AddCard(GameDeck.DrawCard());
+            }
+
+            DealerDeck.AddCard(GameDeck.DrawCard());
+            DealerDeck.AddCard(GameDeck.DrawCard());
+
+            DealMessage();
+        }
+
         public override void End()
         {
             base.End();
+        }
+
+        private async Task DealMessage()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Dealing cards...");
+            foreach (KeyValuePair<ulong, Sessions.UserInfo> player in Players)
+            {
+                Sessions.UserInfo userInfo = player.Value;
+                sb.AppendLine($"{userInfo.User.Username}'s hand: ");
+                foreach (Decks.Card card in userInfo.Decks[Channel].Cards)
+                {
+                    sb.AppendLine($" - {card.GetShortCardName()}");
+                }
+            }
+
+            sb.AppendLine($"\nDealer's visible card: {DealerDeck.Cards[0].GetShortCardName()}");
+
+            await Channel.SendMessageAsync(sb.ToString()).ConfigureAwait(false);
         }
     }
 }

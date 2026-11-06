@@ -8,9 +8,12 @@ namespace Cardagin.Decks
     {
         public List<Card> Cards { get; set; } = new List<Card>();
 
-        public void AddDeck(Deck deckToAdd)
+        public void AddDeck(Deck deckToAdd, int n = 1)
         {
-            Cards.AddRange(deckToAdd.Cards);
+            for (int i = 0; i < n; i++)
+            {
+                Cards.AddRange(deckToAdd.Cards);
+            }
         }
 
         public void AddCard(Card cardToAdd)
@@ -29,6 +32,13 @@ namespace Cardagin.Decks
                 Cards[k] = Cards[n];
                 Cards[n] = value;
             }
+        }
+
+        public Card DrawCard(int n = 0)
+        {
+            Card card = Cards[0];
+            Cards.RemoveAt(n);
+            return card;
         }
     }
 
