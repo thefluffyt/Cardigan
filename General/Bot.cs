@@ -15,14 +15,14 @@ namespace Cardagin
     {
         public DiscordClient? Client { get; private set; }
         public CommandsNextExtension? Commands { get; private set; }
-
         public static Dictionary<DiscordChannel, Game> ActiveGames = new Dictionary<DiscordChannel, Game>();
+        public static readonly string configPath = "C:\\Projects\\Cardagain\\Config\\config.json";
 
         public async Task RunAsync()
         {
             var json = string.Empty;
 
-            using (var fs = File.OpenRead("C:\\Projects\\Cardagain\\Config\\config.json"))
+            using (var fs = File.OpenRead(configPath))
             {
                 using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 {
