@@ -18,9 +18,8 @@ namespace Cardagin.Games.Commands
         }
 
         [Command("start")]
-        public async Task StartGame(CommandContext ctx, string gameName)
+        public async Task StartGame(CommandContext ctx, string gameName, bool autoJoin = true)
         {
-            Console.WriteLine("happened");
             if (!ctx.Channel.IsThread) {
                 await ctx.Channel.SendMessageAsync("Please only start games in threads.");
                 return;
@@ -56,7 +55,7 @@ namespace Cardagin.Games.Commands
             {
                 game.Start(ctx);
                 await ctx.Channel.SendMessageAsync($"Starting a new game of {game.Name}! For the game to begin there must be at least {game.MinPlayers} and at most {game.MaxPlayers}");
-                await game.Join(ctx);
+                if (autoJoin) await game.Join(ctx);
             }
             // Placeholder implementation for starting a game
         }

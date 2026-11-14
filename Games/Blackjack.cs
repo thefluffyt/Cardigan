@@ -19,9 +19,9 @@ namespace Cardagin.Games
             GameDeck = new Decks.StandardDeck();
         }
 
-        public override void Start(DiscordChannel channel)
+        public override void Start(CommandContext ctx)
         {
-            base.Start(channel);
+            base.Start(ctx);
         }
 
         public async override Task Deal(CommandContext ctx)
