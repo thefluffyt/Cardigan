@@ -1,4 +1,5 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
@@ -23,17 +24,17 @@ namespace Cardagin.Games
             base.Start(channel);
         }
 
-        public override void Begin()
+        public async override Task Deal(CommandContext ctx)
         {
-            base.Begin();
-        }
+            ArgumentNullException.ThrowIfNull(Channel);
+            ArgumentNullException.ThrowIfNull(GameDeck);
+            ArgumentNullException.ThrowIfNull(DealerDeck);
 
-        public override void Deal()
-        {
-            base.Deal();
+            await base.Deal(ctx);
             foreach (KeyValuePair<ulong, Sessions.UserInfo> player in Players)
             {
                 Sessions.UserInfo userInfo = player.Value;
+
                 userInfo.Decks[Channel].AddCard(GameDeck.DrawCard());
                 userInfo.Decks[Channel].AddCard(GameDeck.DrawCard());
             }
@@ -41,16 +42,19 @@ namespace Cardagin.Games
             DealerDeck.AddCard(GameDeck.DrawCard());
             DealerDeck.AddCard(GameDeck.DrawCard());
 
-            DealMessage();
+            await DealMessage();
         }
 
-        public override void End()
+        public async override Task End(CommandContext ctx)
         {
-            base.End();
+            await base.End(ctx);
         }
 
         private async Task DealMessage()
         {
+            ArgumentNullException.ThrowIfNull(Channel);
+            ArgumentNullException.ThrowIfNull(DealerDeck);
+
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Dealing cards...");
             foreach (KeyValuePair<ulong, Sessions.UserInfo> player in Players)

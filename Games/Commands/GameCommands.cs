@@ -20,7 +20,7 @@ namespace Cardagin.Games.Commands
         [Command("start")]
         public async Task StartGame(CommandContext ctx, string gameName)
         {
-
+            Console.WriteLine("happened");
             if (!ctx.Channel.IsThread) {
                 await ctx.Channel.SendMessageAsync("Please only start games in threads.");
                 return;
@@ -54,19 +54,17 @@ namespace Cardagin.Games.Commands
 
             if (isRecognized)
             {
-                game.Start(ctx.Channel);
+                game.Start(ctx);
                 await ctx.Channel.SendMessageAsync($"Starting a new game of {game.Name}! For the game to begin there must be at least {game.MinPlayers} and at most {game.MaxPlayers}");
-                await JoinGame(ctx);
+                await game.Join(ctx);
             }
-
             // Placeholder implementation for starting a game
         }
 
         [Command("end")]
         public async Task EndGame(CommandContext ctx)
         {
-            Bot.ActiveGames[ctx.Channel].End();
-            await ctx.Channel.SendMessageAsync("The current game has been ended.");
+            await Bot.ActiveGames[ctx.Channel].End(ctx);
         }
 
         [Command("join")]
@@ -75,9 +73,10 @@ namespace Cardagin.Games.Commands
             if (Bot.ActiveGames.ContainsKey(ctx.Channel))
             {
                 await Bot.ActiveGames[ctx.Channel].Join(ctx);
+            } else
+            {
+                await ctx.Channel.SendMessageAsync("There is no active game in this channel to join.");
             }
-
-            await ctx.Channel.SendMessageAsync("There is no active game in this channel to join.");
         }
 
         [Command("leave")]
@@ -86,9 +85,10 @@ namespace Cardagin.Games.Commands
             if (Bot.ActiveGames.ContainsKey(ctx.Channel))
             {
                 await Bot.ActiveGames[ctx.Channel].Leave(ctx);
+            } else
+            {
+                await ctx.Channel.SendMessageAsync("There is no active game in this channel.");
             }
-
-            await ctx.Channel.SendMessageAsync("There is no active game in this channel.");
         }
 
         [Command("deal")]
@@ -96,16 +96,7 @@ namespace Cardagin.Games.Commands
         {
             if (Bot.ActiveGames.ContainsKey(ctx.Channel))
             {
-                if (Bot.ActiveGames[ctx.Channel].Players.Count < Bot.ActiveGames[ctx.Channel].MinPlayers)
-                {
-                    await ctx.Channel.SendMessageAsync("Cannot deal cards as there are not enough players in the game.");
-                    return;
-                } else if (Bot.ActiveGames[ctx.Channel].Players.Count > Bot.ActiveGames[ctx.Channel].MaxPlayers)  {
-                    await ctx.Channel.SendMessageAsync("Cannot deal cards as there are too many players in the game.");
-                    return;
-                }
-
-                    Bot.ActiveGames[ctx.Channel].Deal();
+                await Bot.ActiveGames[ctx.Channel].Deal(ctx);
             } else {
                 await ctx.Channel.SendMessageAsync("There is no active game in this channel to deal cards for.");
             }

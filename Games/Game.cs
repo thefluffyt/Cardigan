@@ -15,24 +15,23 @@ namespace Cardagin.Games
         public Decks.Deck? DealerDeck { get; set; }
         public DiscordChannel? Channel { get; set; }
 
-        public virtual void Start(DiscordChannel channel)
+        public virtual void Start(DSharpPlus.CommandsNext.CommandContext ctx)
         {
+            DiscordChannel channel = ctx.Channel;
             Console.WriteLine($"{Name} started in {channel.Id}");
             Channel = channel;
             Bot.ActiveGames.Add(channel, this);
         }
 
-        public virtual void Begin()
+        public async virtual Task End(DSharpPlus.CommandsNext.CommandContext ctx)
         {
-            Console.WriteLine($"{Name} commenced in {Channel.Id}");
-            InProgress = true;
-        }
+            ArgumentNullException.ThrowIfNull(Channel);
 
-        public virtual void End()
-        {
             InProgress = false;
             Bot.ActiveGames.Remove(Channel);
-            Console.WriteLine($"Game '{Name}' has ended!");
+            Console.WriteLine($"{Name} ended in {Channel.Id}");
+
+            await ctx.Channel.SendMessageAsync($"The current game of {Name} has been ended.");
         }
 
         public async virtual Task Join(DSharpPlus.CommandsNext.CommandContext ctx)
@@ -66,9 +65,19 @@ namespace Cardagin.Games
             await ctx.Channel.SendMessageAsync($"{ctx.User.Mention}, you are not part of the current game.");
         }
 
-        public virtual void Deal()
+        public async virtual Task Deal(DSharpPlus.CommandsNext.CommandContext ctx)
         {
             InProgress = true;
+            if (Bot.ActiveGames[ctx.Channel].Players.Count < Bot.ActiveGames[ctx.Channel].MinPlayers)
+            {
+                await ctx.Channel.SendMessageAsync("Cannot deal cards as there are not enough players in the game.");
+                return;
+            }
+            else if (Bot.ActiveGames[ctx.Channel].Players.Count > Bot.ActiveGames[ctx.Channel].MaxPlayers)
+            {
+                await ctx.Channel.SendMessageAsync("Cannot deal cards as there are too many players in the game.");
+                return;
+            }
             Console.WriteLine($"Dealing cards in game '{Name}'...");
         }
     }
