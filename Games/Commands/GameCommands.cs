@@ -34,15 +34,9 @@ namespace Cardagin.Games.Commands
             Game game = new EmptyGame();
             bool isRecognized = true;
 
-            switch (gameName.ToLower())
+            switch (Bot.gameAliases[gameName])
             {
-                case "blackjack":
-                    game = new Blackjack();
-                    break;
-                case "21":
-                    game = new Blackjack();
-                    break;
-                case "bj":
+                case GameType.BLACKJACK:
                     game = new Blackjack();
                     break;
                 default:

@@ -90,4 +90,11 @@ namespace Cardagin.Games
             Description = "This is a placeholder game with no functionality.";
         }
     }
+
+    public enum GameType
+    { 
+        EMPTY = -1,
+        BLACKJACK,
+        POKER
+    }
 }
