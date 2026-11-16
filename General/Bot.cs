@@ -16,7 +16,7 @@ namespace Cardagin
     {
         public static DiscordClient? Client { get; private set; }
         public CommandsExtension? Commands { get; private set; }
-        public static ILogger? Logger { get; private set; }
+        public static ILogger Logger { get; private set; }
         public static Dictionary<DiscordChannel, Game> ActiveGames = new Dictionary<DiscordChannel, Game>();
         public static readonly string configPath = "C:\\Projects\\Cardagain\\Config\\config.json";
         public static readonly string gameAliasPath = "C:\\Projects\\Cardagain\\Config\\games.json";

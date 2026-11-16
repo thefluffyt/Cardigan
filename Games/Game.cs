@@ -1,6 +1,7 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.Commands;
 using Cardagin.Decks;
+using Microsoft.Extensions.Logging;
 
 namespace Cardagin.Games
 {
@@ -20,7 +21,7 @@ namespace Cardagin.Games
         public virtual void Start(CommandContext ctx)
         {
             DiscordChannel channel = ctx.Channel;
-            Console.WriteLine($"{Name} started in {channel.Id}");
+            Bot.Logger.LogDebug($"{Name} started in {channel.Id}");
             Channel = channel;
             Bot.ActiveGames.Add(channel, this);
         }
@@ -31,7 +32,7 @@ namespace Cardagin.Games
 
             InProgress = false;
             Bot.ActiveGames.Remove(Channel);
-            Console.WriteLine($"{Name} ended in {Channel.Id}");
+            Bot.Logger.LogDebug($"{Name} ended in {Channel.Id}");
 
             await ctx.RespondAsync($"The current game of {Name} has been ended.");
         }
@@ -52,6 +53,7 @@ namespace Cardagin.Games
             }
 
             game.Players.Add(ctx.User.Id, new Sessions.UserInfo(ctx));
+            Bot.Logger.LogInformation($"{ctx.User.Id} joined {Name} in {ctx.Channel}");
             if (autoJoin)
             {
                 await ctx.FollowupAsync($"{ctx.User.Mention} has joined the game! {game.MaxPlayers - game.Players.Count} slot{(game.MaxPlayers - game.Players.Count == 1 ? "" : "s")} left. {(game.MaxPlayers - game.Players.Count <= 0 ? " The game is now full no more players can join!" : "")} {(game.Players.Count - game.MinPlayers >= 0 ? "The game has the minimum required players and can now begin!" : "")}");
@@ -66,7 +68,9 @@ namespace Cardagin.Games
             if (game.Players.ContainsKey(ctx.User.Id))
             {
                 game.Players.Remove(ctx.User.Id);
+                Bot.Logger.LogInformation($"{ctx.User.Id} left {Name} in {ctx.Channel}");
                 await ctx.RespondAsync($"{ctx.User.Mention} has left the game. {game.Players.Count} player{(game.Players.Count == 1 ? "" : "s")} remaining.");
+                return;
             }
 
             await ctx.RespondAsync($"{ctx.User.Mention}, you are not part of the current game.");
@@ -85,7 +89,7 @@ namespace Cardagin.Games
                 await ctx.RespondAsync("Cannot deal cards as there are too many players in the game.");
                 return;
             }
-            Console.WriteLine($"Dealing cards in game '{Name}'...");
+            Bot.Logger.LogInformation($"Initial cards for {Name} in {ctx.Channel.Id}");
         }
     }
 
