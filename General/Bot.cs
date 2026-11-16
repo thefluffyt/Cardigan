@@ -1,17 +1,22 @@
 ﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
+using DSharpPlus.Commands;
 using System.Text;
 using Newtonsoft.Json;
 using Cardagin.Config;
 using Cardagin.Games;
 using DSharpPlus.Entities;
+using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Commands.Processors.SlashCommands.InteractionNamingPolicies;
+using Cardagin.Games.Commands;
+using Microsoft.Extensions.Logging;
 
 namespace Cardagin
 {
     public class Bot
     {
-        public DiscordClient? Client { get; private set; }
-        public CommandsNextExtension? Commands { get; private set; }
+        public static DiscordClient? Client { get; private set; }
+        public CommandsExtension? Commands { get; private set; }
+        public static ILogger? Logger { get; private set; }
         public static Dictionary<DiscordChannel, Game> ActiveGames = new Dictionary<DiscordChannel, Game>();
         public static readonly string configPath = "C:\\Projects\\Cardagain\\Config\\config.json";
         public static readonly string gameAliasPath = "C:\\Projects\\Cardagain\\Config\\games.json";
@@ -31,27 +36,28 @@ namespace Cardagin
 
             var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
-            var config = new DiscordConfiguration
+            if (string.IsNullOrWhiteSpace(configJson.Token))
             {
-                Token = configJson.Token,
-                TokenType = TokenType.Bot,
-                AutoReconnect = true,
-                Intents = DiscordIntents.MessageContents | DiscordIntents.GuildMessages | DiscordIntents.DirectMessages | DiscordIntents.Guilds
-            };
+                Console.WriteLine("[Error] No discord token found. Please provide a token via the Token object in the config.json file.");
+                Environment.Exit(1);
+            }
 
-            Client = new DiscordClient(config);
+            DiscordClientBuilder builder = DiscordClientBuilder.CreateDefault(configJson.Token, SlashCommandProcessor.RequiredIntents);
 
-            var commandsConfig = new CommandsNextConfiguration
+            builder.UseCommands((IServiceProvider serviceProvider, CommandsExtension extension) =>
             {
-                StringPrefixes = new string[] { configJson.Prefix },
-                EnableDms = true,
-                DmHelp = true,
-            };
+                //Add the group commands here
+                extension.AddCommands([typeof(BlackjackCommands), typeof(GameCommands)]);
+                SlashCommandProcessor commandProcessor = new(new SlashCommandConfiguration()
+                {
+                    NamingPolicy = new KebabCaseNamingPolicy()
+                });
 
-            Commands = Client.UseCommandsNext(commandsConfig);
+                extension.AddProcessor(commandProcessor);
+            });
 
-            Commands.RegisterCommands<Games.Commands.GameCommands>();
-            Commands.RegisterCommands<Games.Commands.BlackjackCommands>();
+            Client = builder.Build();
+            Logger = Client.Logger;
 
             json = string.Empty;
             using (var fs = File.OpenRead(gameAliasPath))

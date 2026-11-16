@@ -1,33 +1,21 @@
-﻿using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
+﻿using DSharpPlus.Commands;
 
 namespace Cardagin.Games.Commands
 {
-    public class GameCommands : BaseCommandModule
+    public class GameCommands
     {
-        [Command("start")]
-        public async Task StartGame(CommandContext ctx)
-        {
-            if (Bot.ActiveGames.ContainsKey(ctx.Channel))
-            {
-                await ctx.Channel.SendMessageAsync("A game is already active in this channel. Please finish the current game before starting a new one.");
-                return;
-            }
-
-            await ctx.Channel.SendMessageAsync("Please specify a game to start. Usage: `!start <game_name>`");
-        }
 
         [Command("start")]
         public async Task StartGame(CommandContext ctx, string gameName, bool autoJoin = true)
         {
             if (!ctx.Channel.IsThread) {
-                await ctx.Channel.SendMessageAsync("Please only start games in threads.");
+                await ctx.RespondAsync("Please only start games in threads.");
                 return;
             }
 
             if (Bot.ActiveGames.ContainsKey(ctx.Channel))
             {
-                await ctx.Channel.SendMessageAsync("A game is already active in this channel. Please finish the current game before starting a new one.");
+                await ctx.RespondAsync("A game is already active in this channel. Please finish the current game before starting a new one.");
                 return;
             }
 
@@ -40,7 +28,7 @@ namespace Cardagin.Games.Commands
                     game = new Blackjack();
                     break;
                 default:
-                    await ctx.Channel.SendMessageAsync($"Game '{gameName}' not recognized.");
+                    await ctx.RespondAsync($"Game '{gameName}' not recognized.");
                     isRecognized = false;
                     return;
             }
@@ -48,9 +36,11 @@ namespace Cardagin.Games.Commands
             if (isRecognized)
             {
                 game.Start(ctx);
-                await ctx.Channel.SendMessageAsync($"Starting a new game of {game.Name}! For the game to begin there must be at least {game.MinPlayers} and at most {game.MaxPlayers}");
-                if (autoJoin) await game.Join(ctx);
+                await ctx.RespondAsync($"Starting a new game of {game.Name}! For the game to begin there must be at least {game.MinPlayers} and at most {game.MaxPlayers}");
+                if (autoJoin) await game.Join(ctx, true);
             }
+
+            return;
             // Placeholder implementation for starting a game
         }
 
@@ -68,7 +58,7 @@ namespace Cardagin.Games.Commands
                 await Bot.ActiveGames[ctx.Channel].Join(ctx);
             } else
             {
-                await ctx.Channel.SendMessageAsync("There is no active game in this channel to join.");
+                await ctx.RespondAsync("There is no active game in this channel to join.");
             }
         }
 
@@ -80,7 +70,7 @@ namespace Cardagin.Games.Commands
                 await Bot.ActiveGames[ctx.Channel].Leave(ctx);
             } else
             {
-                await ctx.Channel.SendMessageAsync("There is no active game in this channel.");
+                await ctx.RespondAsync("There is no active game in this channel.");
             }
         }
 
@@ -91,7 +81,7 @@ namespace Cardagin.Games.Commands
             {
                 await Bot.ActiveGames[ctx.Channel].Deal(ctx);
             } else {
-                await ctx.Channel.SendMessageAsync("There is no active game in this channel to deal cards for.");
+                await ctx.RespondAsync("There is no active game in this channel to deal cards for.");
             }
         }
     }

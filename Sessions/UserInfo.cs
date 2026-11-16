@@ -1,5 +1,5 @@
 ﻿using Cardagin.Decks;
-using DSharpPlus.CommandsNext;
+using DSharpPlus.Commands;
 using DSharpPlus.Entities;
 
 namespace Cardagin.Sessions

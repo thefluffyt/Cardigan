@@ -1,4 +1,6 @@
 ﻿using DSharpPlus.Entities;
+using DSharpPlus.Commands;
+using Cardagin.Decks;
 
 namespace Cardagin.Games
 {
@@ -11,11 +13,11 @@ namespace Cardagin.Games
         public bool CanHotJoin { get; set; }
         public bool InProgress { get; set; } = false;
         public Dictionary<ulong, Sessions.UserInfo> Players { get; set; } = new Dictionary<ulong, Sessions.UserInfo>();
-        public Decks.Deck? GameDeck { get; set; }
-        public Decks.Deck? DealerDeck { get; set; }
+        public Decks.Deck GameDeck { get; set; } = new EmptyDeck();
+        public Decks.Deck DealerDeck { get; set; } = new EmptyDeck();
         public DiscordChannel? Channel { get; set; }
 
-        public virtual void Start(DSharpPlus.CommandsNext.CommandContext ctx)
+        public virtual void Start(CommandContext ctx)
         {
             DiscordChannel channel = ctx.Channel;
             Console.WriteLine($"{Name} started in {channel.Id}");
@@ -23,7 +25,7 @@ namespace Cardagin.Games
             Bot.ActiveGames.Add(channel, this);
         }
 
-        public async virtual Task End(DSharpPlus.CommandsNext.CommandContext ctx)
+        public async virtual Task End(CommandContext ctx)
         {
             ArgumentNullException.ThrowIfNull(Channel);
 
@@ -31,51 +33,56 @@ namespace Cardagin.Games
             Bot.ActiveGames.Remove(Channel);
             Console.WriteLine($"{Name} ended in {Channel.Id}");
 
-            await ctx.Channel.SendMessageAsync($"The current game of {Name} has been ended.");
+            await ctx.RespondAsync($"The current game of {Name} has been ended.");
         }
 
-        public async virtual Task Join(DSharpPlus.CommandsNext.CommandContext ctx)
+        public async virtual Task Join(CommandContext ctx, bool autoJoin = false)
         {
             Game game = Bot.ActiveGames[ctx.Channel];
             if (game.Players.Count >= game.MaxPlayers)
             {
-                await ctx.Channel.SendMessageAsync($"Sorry {ctx.User.Mention}, the game is already full.");
+                await ctx.RespondAsync($"Sorry {ctx.User.Mention}, the game is already full.");
                 return;
             }
 
             if (game.Players.ContainsKey(ctx.User.Id))
             {
-                await ctx.Channel.SendMessageAsync($"{ctx.User.Mention}, you have already joined the game.");
+                await ctx.RespondAsync($"{ctx.User.Mention}, you have already joined the game.");
                 return;
             }
 
             game.Players.Add(ctx.User.Id, new Sessions.UserInfo(ctx));
-            await ctx.Channel.SendMessageAsync($"{ctx.User.Mention} has joined the game! {game.MaxPlayers - game.Players.Count} slot{(game.MaxPlayers - game.Players.Count == 1 ? "" : "s")} left. {(game.MaxPlayers - game.Players.Count <= 0 ? " The game is now full no more players can join!" : "")} {(game.Players.Count - game.MinPlayers >= 0 ? "The game has the minimum required players and can now begin!" : "")}");
+            if (autoJoin)
+            {
+                await ctx.FollowupAsync($"{ctx.User.Mention} has joined the game! {game.MaxPlayers - game.Players.Count} slot{(game.MaxPlayers - game.Players.Count == 1 ? "" : "s")} left. {(game.MaxPlayers - game.Players.Count <= 0 ? " The game is now full no more players can join!" : "")} {(game.Players.Count - game.MinPlayers >= 0 ? "The game has the minimum required players and can now begin!" : "")}");
+            } else {
+                await ctx.RespondAsync($"{ctx.User.Mention} has joined the game! {game.MaxPlayers - game.Players.Count} slot{(game.MaxPlayers - game.Players.Count == 1 ? "" : "s")} left. {(game.MaxPlayers - game.Players.Count <= 0 ? " The game is now full no more players can join!" : "")} {(game.Players.Count - game.MinPlayers >= 0 ? "The game has the minimum required players and can now begin!" : "")}");
+            }
         }
 
-        public async virtual Task Leave(DSharpPlus.CommandsNext.CommandContext ctx)
+        public async virtual Task Leave(CommandContext ctx)
         {
             Game game = Bot.ActiveGames[ctx.Channel];
             if (game.Players.ContainsKey(ctx.User.Id))
             {
                 game.Players.Remove(ctx.User.Id);
-                await ctx.Channel.SendMessageAsync($"{ctx.User.Mention} has left the game. {game.Players.Count} player{(game.Players.Count == 1 ? "" : "s")} remaining.");
+                await ctx.RespondAsync($"{ctx.User.Mention} has left the game. {game.Players.Count} player{(game.Players.Count == 1 ? "" : "s")} remaining.");
             }
 
-            await ctx.Channel.SendMessageAsync($"{ctx.User.Mention}, you are not part of the current game.");
+            await ctx.RespondAsync($"{ctx.User.Mention}, you are not part of the current game.");
         }
 
-        public async virtual Task Deal(DSharpPlus.CommandsNext.CommandContext ctx)
+        public async virtual Task Deal(CommandContext ctx)
         {
             InProgress = true;
             if (Bot.ActiveGames[ctx.Channel].Players.Count < Bot.ActiveGames[ctx.Channel].MinPlayers)
             {
-                await ctx.Channel.SendMessageAsync("Cannot deal cards as there are not enough players in the game.");
+                await ctx.RespondAsync("Cannot deal cards as there are not enough players in the game.");
                 return;
             }
             else if (Bot.ActiveGames[ctx.Channel].Players.Count > Bot.ActiveGames[ctx.Channel].MaxPlayers)
             {
-                await ctx.Channel.SendMessageAsync("Cannot deal cards as there are too many players in the game.");
+                await ctx.RespondAsync("Cannot deal cards as there are too many players in the game.");
                 return;
             }
             Console.WriteLine($"Dealing cards in game '{Name}'...");

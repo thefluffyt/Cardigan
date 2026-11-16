@@ -1,8 +1,4 @@
-﻿using DSharpPlus.CommandsNext;
-using DSharpPlus.Entities;
-using System;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
+﻿using DSharpPlus.Commands;
 using System.Text;
 
 namespace Cardagin.Games
