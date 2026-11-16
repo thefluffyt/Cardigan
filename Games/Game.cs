@@ -65,6 +65,7 @@ namespace Cardagin.Games
         public async virtual Task Leave(CommandContext ctx)
         {
             Game game = Bot.ActiveGames[ctx.Channel];
+            Bot.Logger.LogDebug($"{ctx.User.Id} left {Name} in {ctx.Channel}");
             if (game.Players.ContainsKey(ctx.User.Id))
             {
                 game.Players.Remove(ctx.User.Id);
