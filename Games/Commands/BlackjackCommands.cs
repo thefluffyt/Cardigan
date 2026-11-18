@@ -15,5 +15,15 @@ namespace Cardagin.Games.Commands
             // Placeholder implementation for stalling in blackjack
         }
 
+        [Command("hit")]
+        public async Task Hit(CommandContext ctx)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"{ctx.User.Username} you have hit here is your new hand:");
+            //Display hand
+            //Display whether they have bust
+
+            await ctx.RespondAsync("");
+        }
     }
 }

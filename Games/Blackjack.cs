@@ -1,5 +1,8 @@
 ﻿using DSharpPlus.Commands;
+using DSharpPlus;
 using System.Text;
+using DSharpPlus.Entities;
+using System.Collections.Immutable;
 
 namespace Cardagin.Games
 {
@@ -27,6 +30,7 @@ namespace Cardagin.Games
             ArgumentNullException.ThrowIfNull(DealerDeck);
 
             await base.Deal(ctx);
+
             foreach (KeyValuePair<ulong, Sessions.UserInfo> player in Players)
             {
                 Sessions.UserInfo userInfo = player.Value;
@@ -38,7 +42,7 @@ namespace Cardagin.Games
             DealerDeck.AddCard(GameDeck.DrawCard());
             DealerDeck.AddCard(GameDeck.DrawCard());
 
-            await DealMessage();
+            await DealMessage(ctx);
         }
 
         public async override Task End(CommandContext ctx)
@@ -46,7 +50,7 @@ namespace Cardagin.Games
             await base.End(ctx);
         }
 
-        private async Task DealMessage()
+        private async Task DealMessage(CommandContext ctx)
         {
             ArgumentNullException.ThrowIfNull(Channel);
             ArgumentNullException.ThrowIfNull(DealerDeck);
@@ -65,7 +69,9 @@ namespace Cardagin.Games
 
             sb.AppendLine($"\nDealer's visible card: {DealerDeck.Cards[0].GetShortCardName()}");
 
-            await Channel.SendMessageAsync(sb.ToString()).ConfigureAwait(false);
+            sb.AppendLine($"<@{Players.Keys.ToImmutableArray()[0]}> it is your turn; hit or stand.");
+
+            await ctx.RespondAsync(sb.ToString()).ConfigureAwait(false);
         }
     }
 }

@@ -13,6 +13,7 @@ namespace Cardagin.Games
         public int MinPlayers { get; set; }
         public bool CanHotJoin { get; set; }
         public bool InProgress { get; set; } = false;
+        public uint CurrentPlayer = 0;
         public Dictionary<ulong, Sessions.UserInfo> Players { get; set; } = new Dictionary<ulong, Sessions.UserInfo>();
         public Decks.Deck GameDeck { get; set; } = new EmptyDeck();
         public Decks.Deck DealerDeck { get; set; } = new EmptyDeck();
@@ -82,15 +83,31 @@ namespace Cardagin.Games
             InProgress = true;
             if (Bot.ActiveGames[ctx.Channel].Players.Count < Bot.ActiveGames[ctx.Channel].MinPlayers)
             {
+                Bot.Logger.LogWarning($"Too few players for {Name} in {ctx.Channel.Id} to deal");
                 await ctx.RespondAsync("Cannot deal cards as there are not enough players in the game.");
                 return;
             }
             else if (Bot.ActiveGames[ctx.Channel].Players.Count > Bot.ActiveGames[ctx.Channel].MaxPlayers)
             {
+                Bot.Logger.LogWarning($"Too many players for {Name} in {ctx.Channel.Id} to deal");
                 await ctx.RespondAsync("Cannot deal cards as there are too many players in the game.");
                 return;
             }
-            Bot.Logger.LogInformation($"Initial cards for {Name} in {ctx.Channel.Id}");
+
+            Bot.Logger.LogInformation($"Initial cards dealt for {Name} in {ctx.Channel.Id}");
+            GameDeck.Shuffle();
+        }
+
+        public int HandTotal(CommandContext ctx, ulong userID)
+        {
+            int total = 0;
+
+            Deck hand = Players[userID].Decks[ctx.Channel];
+
+
+
+
+            return total;
         }
     }
 
