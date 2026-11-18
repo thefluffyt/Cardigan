@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cardagin.Games;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -38,22 +39,32 @@ namespace Cardagin.Decks
             return $"{rank} {suitSymbols[suit]}";
         }
 
-        public override int GetCardValue(Game game)
+        public override int[] GetCardValue(Games.Game game)
         { 
-            switch (rank)
+            switch (game.Name)
             {
-                case Rank.Two: return 2;
-                case Rank.Three: return 3;
-                case Rank.Four: return 4;
-                case Rank.Five: return 5;
-                case Rank.Six: return 6;
-                case Rank.Seven: return 7;
-                case Rank.Eight: return 8;
-                case Rank.Nine: return 9;
-                case Rank.Ten: return 10;
-                case Rank.Jack: return 10;
-                case Rank.
+                case "Blackjack":
+                    switch (rank)
+                    {
+                        case Rank.Two: return [2];
+                        case Rank.Three: return [3];
+                        case Rank.Four: return [4];
+                        case Rank.Five: return [5];
+                        case Rank.Six: return [6];
+                        case Rank.Seven: return [7];
+                        case Rank.Eight: return [8];
+                        case Rank.Nine: return [9];
+                        case Rank.Ten: return [10];
+                        case Rank.Jack: return [10];
+                        case Rank.Queen: return [10];
+                        case Rank.King: return [10];
+                        case Rank.Ace: return [1, 11];
+                        case Rank.Joker: throw new ArgumentException("Card rank cannot be joker for blackjack", "Card rank");
+                        default: throw new ArgumentException("Card rank not accepted", "Card rank");
+                    }
             }
+
+            throw new NotImplementedException();
         }
 
         public enum Rank
