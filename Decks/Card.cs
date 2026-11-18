@@ -16,9 +16,9 @@ namespace Cardagin.Decks
             return "Card Rank Suit Combo not valid";
         }
 
-        public virtual int GetCardValue(Games.Game game)
+        public virtual int[] GetCardValue(Games.Game game)
         {
-            return -1;
+            return [];
         }
     }
 }

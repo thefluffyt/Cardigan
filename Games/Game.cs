@@ -2,6 +2,7 @@
 using DSharpPlus.Commands;
 using Cardagin.Decks;
 using Microsoft.Extensions.Logging;
+using System.Collections.Immutable;
 
 namespace Cardagin.Games
 {
@@ -98,16 +99,31 @@ namespace Cardagin.Games
             GameDeck.Shuffle();
         }
 
-        public int HandTotal(CommandContext ctx, ulong userID)
+        public static int[] HandTotal(Game game, ulong userID)
         {
-            int total = 0;
+            ArgumentNullException.ThrowIfNull(game.Channel);
+            HashSet<int> total = new();
 
-            Deck hand = Players[userID].Decks[ctx.Channel];
+            Deck hand = game.Players[userID].Decks[game.Channel];
+            
+            foreach (Card card in hand.Cards)
+            {
+                HashSet<int> cVal = card.GetCardValue(game).ToHashSet<int>();
+                HashSet<int> nTotal = new();
+                foreach (int tot in total)
+                {
+                    foreach (int val in cVal)
+                    {
+                        nTotal.Add(tot + val);
+                    }
+                }
 
+                total = nTotal;
+            }
 
-
-
-            return total;
+            int[] res = total.ToArray();
+            res.Sort();
+            return res;
         }
     }
 
